@@ -6,27 +6,32 @@ import 'dart:convert';
 import 'package:args/args.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:genui/genui.dart';
 
 import 'samples_view.dart';
 
 void main(List<String> args) {
-  final parser = ArgParser()
-    ..addOption('samples', abbr: 's', help: 'Path to the samples directory');
-  final ArgResults results = parser.parse(args);
-
   const FileSystem fs = LocalFileSystem();
   Directory? samplesDir;
-  if (results.wasParsed('samples')) {
-    samplesDir = fs.directory(results['samples'] as String);
-  } else {
-    final Directory current = fs.currentDirectory;
-    final Directory defaultSamples = fs
-        .directory(current.path)
-        .childDirectory('samples');
-    if (defaultSamples.existsSync()) {
-      samplesDir = defaultSamples;
+
+  // File system operations are not supported on Web platform
+  if (!kIsWeb) {
+    final parser = ArgParser()
+      ..addOption('samples', abbr: 's', help: 'Path to the samples directory');
+    final ArgResults results = parser.parse(args);
+
+    if (results.wasParsed('samples')) {
+      samplesDir = fs.directory(results['samples'] as String);
+    } else {
+      final Directory current = fs.currentDirectory;
+      final Directory defaultSamples = fs
+          .directory(current.path)
+          .childDirectory('samples');
+      if (defaultSamples.existsSync()) {
+        samplesDir = defaultSamples;
+      }
     }
   }
 
